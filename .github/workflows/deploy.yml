@@ -1,0 +1,45 @@
+# 强制部署 dist 文件夹的工作流
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    # 仅在推送到 master 分支时运行此工作流
+    branches:
+      - master
+  workflow_dispatch: # 允许手动运行
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm install
+
+      # 4. 运行构建命令
+      - name: Build project
+        run: npm run build
+
+      # 5. 部署到 GitHub Pages (这是关键步骤!)
+      - name: Deploy to Pages
+        id: deployment
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 告诉 Action 从哪里获取静态文件
+          publish_dir: ./dist 
+          # 设置分支为 gh-pages
+          publish_branch: gh-pages
